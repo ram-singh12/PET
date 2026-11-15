@@ -1,4 +1,3 @@
-
 'use strict';
 
 const STORAGE_KEY = 'spendwise_expenses_v1';
@@ -10,7 +9,24 @@ const form = $('expenseForm');
 let expenses = loadExpenses();
 let toastTimer;
 
-// Load saved expenses
+// Get the current month in local time.
+function getCurrentMonthKey() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+
+    return `${year}-${month}`;
+}
+
+// Load the budget saved for the current month.
+let currentBudget = Number(
+    localStorage.getItem(
+        'spendwise_budget_' + getCurrentMonthKey()
+    )
+) || 0;
+
+
+// Load saved expenses.
 function loadExpenses() {
     try {
         const saved = JSON.parse(
@@ -18,13 +34,15 @@ function loadExpenses() {
         );
 
         return Array.isArray(saved) ? saved : [];
+
     } catch (error) {
         console.error('Could not read saved expenses:', error);
         return [];
     }
 }
 
-// Save expenses in LocalStorage
+
+// Save expenses in LocalStorage.
 function saveExpenses() {
     localStorage.setItem(
         STORAGE_KEY,
@@ -32,7 +50,59 @@ function saveExpenses() {
     );
 }
 
-// Format currency
+
+// Save the monthly budget in LocalStorage.
+function saveBudget() {
+    localStorage.setItem(
+        'spendwise_budget_' + getCurrentMonthKey(),
+        String(currentBudget)
+    );
+}
+
+
+// Display monthly budget usage and remaining amount.
+function renderBudget(monthTotal) {
+    const used = monthTotal;
+    const remaining = currentBudget - used;
+
+    $('budgetUsed').textContent = money(used);
+
+    if (currentBudget <= 0) {
+        $('budgetRemaining').textContent = 'Not set';
+        $('budgetProgress').style.width = '0%';
+
+        $('budgetMessage').textContent =
+            'Set a budget to monitor your monthly spending.';
+
+        return;
+    }
+
+    const percentage = (used / currentBudget) * 100;
+
+    $('budgetRemaining').textContent = money(remaining);
+
+    $('budgetProgress').style.width =
+        Math.min(percentage, 100) + '%';
+
+    if (percentage >= 100) {
+        $('budgetMessage').textContent =
+            'Warning! You have exceeded your monthly budget.';
+
+    } else if (percentage >= 80) {
+        $('budgetMessage').textContent =
+            'Warning! You have used ' +
+            percentage.toFixed(1) +
+            '% of your monthly budget.';
+
+    } else {
+        $('budgetMessage').textContent =
+            percentage.toFixed(1) +
+            '% of your monthly budget has been used.';
+    }
+}
+
+
+// Format currency.
 function money(value) {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -41,7 +111,8 @@ function money(value) {
     }).format(value || 0);
 }
 
-// Prevent HTML injection
+
+// Prevent HTML injection.
 function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g, char => ({
         '&': '&amp;',
@@ -52,7 +123,8 @@ function escapeHTML(value) {
     }[char]));
 }
 
-// Display notification
+
+// Display notification.
 function showToast(message) {
     const toast = $('toast');
 
@@ -66,7 +138,8 @@ function showToast(message) {
     }, 2400);
 }
 
-// Reset expense form
+
+// Reset expense form.
 function resetForm() {
     form.reset();
 
@@ -80,7 +153,8 @@ function resetForm() {
     $('formMessage').textContent = '';
 }
 
-// Calculate dashboard summary
+
+// Calculate dashboard summary.
 function renderSummary() {
     const total = expenses.reduce(
         (sum, item) => sum + Number(item.amount), 0
@@ -93,6 +167,7 @@ function renderSummary() {
 
         return date.getMonth() === now.getMonth()
             && date.getFullYear() === now.getFullYear();
+
     }).reduce((sum, item) => sum + Number(item.amount), 0);
 
     $('totalExpenses').textContent = money(total);
@@ -107,9 +182,15 @@ function renderSummary() {
         'en-IN',
         { month: 'long', year: 'numeric' }
     );
+
+    // Update monthly budget information.
+    renderBudget(monthTotal);
+
+    $('budgetInput').value = currentBudget || '';
 }
 
-// Category-wise expense summary
+
+// Category-wise expense summary.
 function renderCategories() {
     const totals = {};
 
@@ -126,6 +207,7 @@ function renderCategories() {
     if (!sorted.length) {
         container.innerHTML =
             '<p class="empty-small">Your category summary will appear here.</p>';
+
         return;
     }
 
@@ -137,6 +219,7 @@ function renderCategories() {
                 <span class="category-name">
                     ${escapeHTML(category)}
                 </span>
+
                 <span class="category-value">
                     ${money(amount)}
                 </span>
@@ -151,13 +234,15 @@ function renderCategories() {
     `).join('');
 }
 
-// Filter expenses
+
+// Filter expenses.
 function getFilteredExpenses() {
     const query = $('searchInput').value.trim().toLowerCase();
     const category = $('filterCategory').value;
     const month = $('filterDate').value;
 
     return expenses.filter(item => {
+
         const matchesQuery =
             !query ||
             `${item.title} ${item.category} ${item.notes || ''}`
@@ -177,7 +262,8 @@ function getFilteredExpenses() {
     );
 }
 
-// Display expense table
+
+// Display expense table.
 function renderTable() {
     const rows = getFilteredExpenses();
     const body = $('expenseTableBody');
@@ -192,6 +278,7 @@ function renderTable() {
                 </td>
             </tr>
         `;
+
     } else {
         body.innerHTML = rows.map(item => `
             <tr>
@@ -199,6 +286,7 @@ function renderTable() {
                     <div class="expense-title">
                         ${escapeHTML(item.title)}
                     </div>
+
                     ${item.notes
                         ? `<div class="expense-note">
                             ${escapeHTML(item.notes)}
@@ -248,14 +336,16 @@ function renderTable() {
         `Showing ${rows.length} of ${expenses.length} transactions`;
 }
 
-// Render complete application
+
+// Render complete application.
 function renderAll() {
     renderSummary();
     renderCategories();
     renderTable();
 }
 
-// Add or update expense
+
+// Add or update expense.
 form.addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -278,6 +368,7 @@ form.addEventListener('submit', function(event) {
     if (date > new Date().toISOString().slice(0, 10)) {
         $('formMessage').textContent =
             'Please choose today or an earlier date.';
+
         return;
     }
 
@@ -321,7 +412,8 @@ form.addEventListener('submit', function(event) {
     renderAll();
 });
 
-// Edit and delete expense
+
+// Edit and delete expense.
 $('expenseTableBody').addEventListener('click', function(event) {
     const button = event.target.closest('button[data-action]');
 
@@ -374,10 +466,12 @@ $('expenseTableBody').addEventListener('click', function(event) {
     }
 });
 
-// Cancel editing
+
+// Cancel editing.
 $('cancelEditButton').addEventListener('click', resetForm);
 
-// Scroll to add expense section
+
+// Scroll to add expense section.
 $('topAddButton').addEventListener('click', () => {
     $('add-expense').scrollIntoView({
         behavior: 'smooth'
@@ -388,7 +482,8 @@ $('topAddButton').addEventListener('click', () => {
     });
 });
 
-// Search and filters
+
+// Search and filters.
 ['searchInput', 'filterCategory', 'filterDate'].forEach(id => {
     $(id).addEventListener(
         id === 'searchInput' ? 'input' : 'change',
@@ -396,7 +491,8 @@ $('topAddButton').addEventListener('click', () => {
     );
 });
 
-// Clear filters
+
+// Clear filters.
 $('clearFilters').addEventListener('click', () => {
     $('searchInput').value = '';
     $('filterCategory').value = 'All';
@@ -405,7 +501,8 @@ $('clearFilters').addEventListener('click', () => {
     renderTable();
 });
 
-// Export expenses to CSV
+
+// Export expenses to CSV.
 $('exportButton').addEventListener('click', () => {
     const rows = getFilteredExpenses();
 
@@ -451,7 +548,83 @@ $('exportButton').addEventListener('click', () => {
     showToast('CSV file exported.');
 });
 
-// Initialize application
+
+// Save the monthly budget.
+$('saveBudgetButton').addEventListener('click', () => {
+    const amount = Number($('budgetInput').value);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        showToast('Please enter a valid budget.');
+        return;
+    }
+
+    currentBudget = amount;
+
+    saveBudget();
+    renderAll();
+
+    showToast('Monthly budget saved successfully.');
+});
+
+
+// Initialize application.
 $('date').value = new Date().toISOString().slice(0, 10);
 
 renderAll();
+// Dark Mode Feature
+
+const themeToggle = document.getElementById('themeToggle');
+
+// Load saved theme preference.
+const savedTheme = localStorage.getItem('spendwise_theme');
+
+if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️ Light Mode';
+}
+
+// Toggle between light and dark mode.
+themeToggle.addEventListener('click', function () {
+
+    document.body.classList.toggle('dark-mode');
+
+    const isDark = document.body.classList.contains('dark-mode');
+
+    if (isDark) {
+        localStorage.setItem('spendwise_theme', 'dark');
+        themeToggle.textContent = '☀️ Light Mode';
+    } else {
+        localStorage.setItem('spendwise_theme', 'light');
+        themeToggle.textContent = '🌙 Dark Mode';
+    }
+
+});
+// Clear All Expenses Feature
+
+const clearAllButton = document.getElementById('clearAllButton');
+
+clearAllButton.addEventListener('click', function () {
+
+    if (expenses.length === 0) {
+        showToast('There are no expenses to clear.');
+        return;
+    }
+
+    const confirmed = confirm(
+        'Are you sure you want to delete ALL expenses? This action cannot be undone.'
+    );
+
+    if (confirmed) {
+
+        expenses = [];
+
+        saveExpenses();
+
+        resetForm();
+
+        renderAll();
+
+        showToast('All expenses have been deleted.');
+    }
+
+});

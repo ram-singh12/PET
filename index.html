@@ -87,6 +87,10 @@
             <!-- Header -->
             <header class="topbar">
 
+                <button id="themeToggle" class="theme-toggle" type="button">
+                    🌙 Dark Mode
+                </button>
+
                 <div>
                     <p class="eyebrow">PERSONAL FINANCE</p>
 
@@ -166,6 +170,69 @@
                     <small>Per transaction</small>
 
                 </article>
+
+            </section>
+            
+            <!-- Monthly Budget Section -->
+            <section class="panel budget-panel">
+
+    <div class="panel-heading">
+        <div>
+            <p class="eyebrow">MONTHLY PLANNING</p>
+            <h2>Monthly budget</h2>
+        </div>
+
+        <span class="heading-icon">₹</span>
+    </div>
+
+    <div class="budget-form">
+
+        <div>
+            <label for="budgetInput">Set your monthly budget (₹)</label>
+
+            <input
+                type="number"
+                id="budgetInput"
+                min="1"
+                step="0.01"
+                placeholder="Enter monthly budget"
+            >
+        </div>
+
+        <button
+            class="button button-primary"
+            id="saveBudgetButton"
+            type="button">
+            Save budget
+        </button>
+
+    </div>
+
+    <div class="budget-details">
+
+        <div>
+            <span>Budget used</span>
+            <strong id="budgetUsed">₹0.00</strong>
+        </div>
+
+        <div>
+            <span>Remaining budget</span>
+            <strong id="budgetRemaining">Not set</strong>
+        </div>
+
+    </div>
+
+    <div class="progress-track budget-progress">
+        <div
+            class="progress-fill"
+            id="budgetProgress"
+            style="width: 0%">
+        </div>
+    </div>
+
+    <p id="budgetMessage" class="budget-message">
+        Set a budget to monitor your monthly spending.
+    </p>
 
             </section>
 
@@ -364,6 +431,13 @@
                         id="exportButton"
                         type="button">
                         ↓ Export CSV
+                    </button>
+                    
+                    <button
+                        type="button"
+                        id="clearAllButton"
+                        class="clear-all-button">
+                        Clear All Expenses
                     </button>
 
                 </div>
