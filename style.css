@@ -893,3 +893,28 @@ body.dark-mode td {
 .clear-all-button:hover {
     background: #b91c1c;
 }
+/* Improved Dark Mode Appearance */
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+    color: #f9fafb;
+}
+
+body.dark-mode button:not(.theme-toggle) {
+    color: #ffffff;
+}
+
+body.dark-mode .category-pill {
+    background: #374151;
+    color: #ffffff;
+}
+
+body.dark-mode .empty-state,
+body.dark-mode .empty-small {
+    color: #d1d5db;
+}
+
+body.dark-mode .progress-track {
+    background: #374151;
+}
