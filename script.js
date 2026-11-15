@@ -455,3 +455,60 @@ $('exportButton').addEventListener('click', () => {
 $('date').value = new Date().toISOString().slice(0, 10);
 
 renderAll();
+// Dark Mode Feature
+
+const themeToggle = document.getElementById('themeToggle');
+
+// Load saved theme preference.
+const savedTheme = localStorage.getItem('spendwise_theme');
+
+if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️ Light Mode';
+}
+
+// Toggle between light and dark mode.
+themeToggle.addEventListener('click', function () {
+
+    document.body.classList.toggle('dark-mode');
+
+    const isDark = document.body.classList.contains('dark-mode');
+
+    if (isDark) {
+        localStorage.setItem('spendwise_theme', 'dark');
+        themeToggle.textContent = '☀️ Light Mode';
+    } else {
+        localStorage.setItem('spendwise_theme', 'light');
+        themeToggle.textContent = '🌙 Dark Mode';
+    }
+
+});
+// Clear All Expenses Feature
+
+const clearAllButton = document.getElementById('clearAllButton');
+
+clearAllButton.addEventListener('click', function () {
+
+    if (expenses.length === 0) {
+        showToast('There are no expenses to clear.');
+        return;
+    }
+
+    const confirmed = confirm(
+        'Are you sure you want to delete ALL expenses? This action cannot be undone.'
+    );
+
+    if (confirmed) {
+
+        expenses = [];
+
+        saveExpenses();
+
+        resetForm();
+
+        renderAll();
+
+        showToast('All expenses have been deleted.');
+    }
+
+});
