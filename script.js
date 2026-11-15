@@ -70,6 +70,10 @@ function renderBudget(monthTotal) {
     if (currentBudget <= 0) {
         $('budgetRemaining').textContent = 'Not set';
         $('budgetProgress').style.width = '0%';
+        $('budgetProgress').classList.remove(
+            'budget-warning',
+            'budget-danger'
+            );
 
         $('budgetMessage').textContent =
             'Set a budget to monitor your monthly spending.';
@@ -83,6 +87,19 @@ function renderBudget(monthTotal) {
 
     $('budgetProgress').style.width =
         Math.min(percentage, 100) + '%';
+    // Change progress bar colour according to budget usage.
+    const progressBar = $('budgetProgress');
+
+    progressBar.classList.remove(
+    'budget-warning',
+    'budget-danger'
+    );
+
+    if (percentage >= 100) {
+    progressBar.classList.add('budget-danger');
+    } else if (percentage >= 80) {
+    progressBar.classList.add('budget-warning');
+    }
 
     if (percentage >= 100) {
         $('budgetMessage').textContent =
