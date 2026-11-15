@@ -987,3 +987,12 @@ body.dark-mode .progress-track {
     }
 
 }
+/* Dynamic Budget Alert Colours */
+
+.budget-progress .progress-fill.budget-warning {
+    background: #f59e0b;
+}
+
+.budget-progress .progress-fill.budget-danger {
+    background: #dc2626;
+}
